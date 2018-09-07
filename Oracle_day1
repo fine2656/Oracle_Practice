@@ -1,0 +1,74 @@
+    show user;
+    
+    select * from dba_users;
+    -- 오라클 서버에 존재하는 모든 사용자 계정 정보를 조회해주는 것이다. 
+    -- 관리자만 볼수 있다. hr 계정으로는 실행 불가.
+    /*
+    ORA-00942: table or view does not exist
+    00942. 00000 -  "table or view does not exist"
+    
+    */
+    
+    /*
+     ==== 아아주 중요함 (필수암기) !! ====
+     >>>> select 문의 처리 순서 <<<<
+    
+    select 컬럼명       --- 5 
+    from 테이블명(뷰명)   --- 1
+    where 조건절           --- 2 where 절이 뜻하는 것은 해당 테이블(뷰)에서 조건에 만족하는 행을 메모리(RAM)에 로딩해주는 것이다.
+    group by 절           --- 3
+    having 그룹 함수 조건절  --- 4
+    order by 정렬 --- 6 :정렬
+    */
+    select * from tab;
+    -- 현재 오라클서버에 접속한 사용자(지금은 HR) 소유의 테이블명과 뷰명을 조회해주는 것이다.
+    select * 
+    from hr.departments; 
+    -- HR 소유의 부서 테이블, 소유주 명을 기입하지 않으면 자기자신의 테이블이 나온다. 
+    /*
+        column = field = arrtibute = 열
+        row = record = tuple = 행
+        table(row가 여러개 있는 것) = entity(논리적) = 테이블
+    */
+    
+    --departments 테이블의 컬럼 구성을 조회
+    describe departments ;
+    -- 또는 
+    desc departments ;
+    /*
+    이름                                        
+    ---------------                         
+    DEPARTMENT_ID  => 부서 번호               
+    DEPARTMENT_NAME => 부서명                
+    MANAGER_ID    => 부서장(부장님)의 사원번호)               
+    LOCATION_ID   => 부서가 위치하는 지역번호                   
+    */
+
+    select*
+    from employees; -- 사워 테이블
+    
+    desc employees; -- 
+    /*
+    이름            
+    -------------- 
+    EMPLOYEE_ID   => 사원 번호 
+    FIRST_NAME    => 성          
+    LAST_NAME     => 이름 
+    EMAIL         =>이메일  
+    PHONE_NUMBER  =>전화번호 
+    HIRE_DATE     => 입사일자 /  DATE => 날짜 타입         
+    JOB_ID        => 직종아이디 
+    SALARY        => 기본급여 /  NUMBER(8,2) 정수 제어          
+    COMMISSION_PCT => 수당 퍼센디지 / 0.2는 기본급의 20%라는 말이다.
+    MANAGER_ID     => 직속상관(사수)의 사원번호           
+    DEPARTMENT_ID  => 본인이 근무하는 부서번호
+    */
+    
+    select *
+    from locations;-- 부서의 위치를 알려주는 테이블
+    
+    
+    select *
+    from countries; -- 국가 정보를 알려주는 테이블
+    select*
+    from regions; -- 대륙정보를 알려주는 테이블.
