@@ -1,0 +1,214 @@
+==== 2. 숫자함수 ====
+-- ** mod : 나머지를 구해주는것.
+
+select 5/2, mod(5,2),trunc(5/2)
+from dual;
+
+-- mod : 나머지.
+-- trunc : 몫
+-- 출력 : 2.5	1	2
+
+-- ** 2.2 round() : 반올림을 해주는 것
+
+select 94.547,
+    round(94.547), -- 95
+    round(94.547,0), -- 1의 자리까지만 보여줌 ,95
+    round(94.547,1), --소수부 첫째 자리까지 보여줌 ,94.5
+    round(94.547,2), -- 소수부 둘째 자리까지 보여줌 , 94.55
+    round(94.547,-1), -- 십의자리까지 보여줌 ,90
+    round(94.547,-2) -- 백의자리까지 보여줌 ,100
+from dual;
+-- 출력 : 94.547 	95   95 	94.5 90 100
+
+-- ** 2.3 trunc :  절삭 해주는 것
+
+select 94.547,
+    trunc(94.547),
+    trunc(94.547,0), -- 1의 자리까지만 보여줌 ,94
+    trunc(94.547,1), --소수부 첫째 자리까지 보여줌 ,94.5
+    trunc(94.547,2), -- 소수부 둘째 자리까지 보여줌 , 94.54
+    trunc(94.547,-1), -- 십의자리까지 보여줌 ,90
+    trunc(94.547,-2) -- 백의자리까지 보여줌 ,0
+from dual;
+
+ -- [퀴즈] --
+ ------------------------------- 
+/*
+학번  성명  국어  영어  수학   총점 평균  학점
+
+*/
+-------------------------------- 
+
+create table tbl_sungjuk
+(hakbun varchar2(20)
+,name   varchar2(20)
+,kor    number(3)
+,eng    number(3)
+,math   number(3)
+);
+
+insert into tbl_sungjuk(hakbun,name,kor,eng,math)
+values('kh001','한석규',90,92,93);
+insert into tbl_sungjuk(hakbun,name,kor,eng,math)
+values('kh002','두석규',100,100,100);
+insert into tbl_sungjuk(hakbun,name,kor,eng,math)
+values('kh003','세석규',71,72,73);
+insert into tbl_sungjuk(hakbun,name,kor,eng,math)
+values('kh004','네석규',89,87,81);
+insert into tbl_sungjuk(hakbun,name,kor,eng,math)
+values('kh005','오석규',60,50,40);
+insert into tbl_sungjuk(hakbun,name,kor,eng,math)
+values('kh006','육석규',80,81,87);
+
+select *
+from tbl_sungjuk;]
+
+commit;
+
+/*
+kh001	한석규	90	92	93
+kh002	두석규	100	100	100
+kh003	세석규	71	72	73
+kh004	네석규	89	87	81
+kh005	오석규	60	50	40
+kh006	육석규	80	81	87
+*/
+-- 1) case 문 사용
+select hakbun AS 학번, name AS 성명, kor AS 국어, eng AS 영어, math AS 수학, 
+  (kor+math+eng) AS 총점,
+  round((kor+math+eng)/3,1) AS 평균,
+  case trunc(round((kor+math+eng)/3,1),-1)
+  when 100 then 'A학점'
+  when 90  then 'A학점'
+  when 80 then 'B학점'
+  when 70 then 'C학점'
+  when 60 then 'D학점'
+  else 'F학점'
+  end AS 학점
+from tbl_sungjuk;
+
+/*
+kh001	한석규	90	92	93	275	91.7	A학점
+kh002	두석규	100	100	100	300	100	A학점
+kh003	세석규	71	72	73	216	72	C학점
+kh004	네석규	89	87	81	257	85.7	B학점
+kh005	오석규	60	50	40	150	50	F학점
+kh006	육석규	80	81	87	248	82.7	B학점*/
+
+--2) decode 문 사용
+select hakbun AS 학번, name AS 성명, kor AS 국어, eng AS 영어, math AS 수학, 
+  (kor+math+eng) AS 총점,
+  round((kor+math+eng)/3,1) AS 평균,
+  decode(trunc(round((kor+math+eng)/3,1),-1),100,'A학점'
+                                            ,90 ,'A학점'
+                                            ,80 ,'B학점'
+                                            ,70,'C학점'
+                                            ,60, 'D학점'
+                                            ,'F학점') AS 학점
+from tbl_sungjuk;
+
+-- ** 로그인 처리 ** --
+
+-- count(*) : group 함수, select 되어진 행의 갯수
+select count(*)
+from tbl_members;
+
+-- 출력 : 5
+
+select count(*)
+from tbl_members
+where userid = 'kimys' and passwd = 'qwer';
+-- => userid, passwd 가 존재하면 '1' 이 출력됨
+
+1)로그인 성공
+1-1 ) case 
+      select case(
+            select count(*)
+            from tbl_members
+            where userid = 'kimys' and passwd = 'abcd'
+            )
+       when 1 then '로그인 성공'
+       else(  
+            case (select count(*)
+                  from tbl_members
+                  where userid = 'kimys')
+            when 1 then '비밀번호가 틀렸습니다.'
+            else '회원가입하세요!'
+            end
+            )
+        end 
+ from dual;
+ 1-2) decode
+   select decode(
+            (select count(*)
+            from tbl_members
+            where userid = 'kimys' and passwd = 'abcd'
+            ),1,'로그인 성공'
+             ,decode(
+                   (select count(*)
+                  from tbl_members
+                  where userid = 'kimys'),1,'비밀번호가 틀렸습니다.'
+            ,'회원가입하세요!')
+            )
+ from dual;
+ 
+ -- 출력 : 로그인 성공
+ 
+ 2) 김유신님 환영합니다
+
+2-1) case
+select case(
+            select count(*)
+            from tbl_members
+            where userid = 'kimys' and passwd = 'abcd'
+            )
+       when 1 then (
+                    select name ||'님 환영합니다'
+                    from tbl_members
+                    where userid = 'kimys'
+                    )
+else(  
+            case (select count(*)
+                  from tbl_members
+                  where userid = 'kimys')
+            when 1 then '비밀번호가 틀렸습니다.'
+            else '회원가입하세요!'
+            end
+            )
+        end 
+ from dual;
+ 
+ 
+-- [퀴즈] --
+/*
+employees 테이블에서 모든 사원들에 대해 아래와 같이 나오도록 하세요.
+------------------------------
+사원번호 사원명 주민번호 성별
+-----------------------------
+7,1
+*/
+1)case
+select employee_id, first_name || ' '||last_name, jubun,
+     case when substr(jubun,7,1) in('1','3') then '남자'
+          else '여자'
+          end AS 성별
+    from employees;
+ 2) decode
+select employee_id, first_name || ' '||last_name, jubun,
+     decode(substr(jubun,7,1), '1','남자'
+                               ,'3','남자'
+                               ,'여자') AS 성별
+    from employees;
+    
+--[퀴즈] 
+-------------------------------
+--사원번호 사원명 주민번호 성별 생년
+----------------------------
+select employee_id AS 사원번호, first_name || ' '||last_name  AS 사원명 , jubun AS 주민번호  ,
+     case when substr(jubun,7,1) in('1','3') then '남자'
+          else '여자'
+          end AS 성별,
+      case  when substr(jubun,7,1) in('1','2') then '19' || substr(jubun,1,2)
+      else '20' || substr(jubun,1,2) 
+     end AS 생년
+    from employees;
