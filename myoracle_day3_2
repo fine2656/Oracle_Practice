@@ -1,0 +1,128 @@
+-- ** 1.8 lpad: 왼쪽부터 문자 자리 채움
+-- ** 1.9 rpad : 오른쪽부터 문자를 자리채움.
+select lpad('정보교육원',20,'*'), rpad('정보교육원',20,'*')
+from dual; 
+
+-- 20byte, 나머지를 '*'로 채워라
+-- 출력 : **********정보교육원	정보교육원**********
+
+select lpad('대한민국','대한민국'*2*8,'대만민국)
+from dual;
+
+-- 출력 : 대한민국대한민국대한민국대한민국대한민국대한민국대한민국대한민국
+
+-- ** 1.10 ltrim : 왼쪽부터 문자를 제거하는 함수
+-- ** 1.11 rtrim : 오른쪽부터 문자를 제거하는 함수
+-- trim : 양쪽의 공백을 제거
+select ltirm('aavccdadsabcd','abcd'), rtrim('aavccdadsabcd','abcd')
+from dual;
+-- 이 문자열에서 a or b or c or d 를 제거해라. abcd 에 해당 되지 않는 문자에서 정지
+----출력 : sabcd / aabccdads
+
+select 'KH' || '       정보       교육원'
+     , 'KH' || ltrim('       정보       교육원')
+     , 'KH          ' || ('정보       교육원')
+     , rtrim('KH          ' )|| ('정보       교육원')
+     , 'KH' || '               정보             '||'교육원'
+     , 'KH' || trim('               정보             ')||'교육원' -- KH정보교육원	
+     , 'KH' || ltrim('               정보             ')||'교육원' --  KH정보             교육원	
+     , 'KH' || rtrim('               정보             ')||'교육원' -- KH               정보교육원
+from dual;
+-- 제거해야할 문자를 제공하지 않을 시 공백을 제거한다.
+-- 출력 : KH       정보       교육원	 / KH정보       교육원 / KH          정보       교육원	/ 
+--       KH정보       교육원 /KH               정보             교육원
+
+-- [퀴즈] --
+이순신 임진왜란의 구국영웅입니다.
+
+
+create table tbl_trimtest
+(name varchar2(20)
+,memo varchar2(200)
+);
+
+insert into tbl_trimtest(name, memo)
+values('이순신','   임   진왜란의 구국영웅     ');
+
+commit;
+
+select name || ' ' || memo
+from tbl_trimtest;  
+
+select name || ' ' || substr(trim(memo),1,instr(trim(memo),' ',1)-1) || trim(substr(trim(memo),instr(trim(memo),' ')))
+from tbl_trimtest;
+
+-- 출력 :  이순신 임진왜란의 구국영웅
+/*
+select name || memo --'이순신   임   진왜란의 구국영웅     '
+      ,trim(memo) -- '임   진왜란의 구국영웅'(앞뒤 공백 없앰)
+      ,  name || ' '
+      || substr(trim(memo),1,instr(trim(memo),' ',1)-1) -- '임' 출력
+      || ltrim(substr(trim(memo),instr(trim(memo),' ',1) )) -- 진왜란의 구국영웅입니다.
+      ||'입니다.'
+      -- 이순신 임진왜란의 구국영웅입니다.
+from tbl_trimtest;
+*/
+
+-- ** 1.12 translate : 첫번째 문자열에서 두번째 문자열이 있을 경우 세번째 문자열로 바꿔준다.
+select translate('010-34546-7890', '0123456789','영일이삼사오육칠팔구')
+from dual;
+
+-- 출력 : 영일영-삼사오사육-칠팔구영
+-- 일대일
+
+-- ** 1.13 replace
+select replace('KH정보교육원 교육진흥워 서울교육대학교', '교육', 'education')
+from dual;
+-- 첫번째 문자열에서 두번째 문자열이 있을 경우 문자를 세번째 문자열로 바꿔준다.
+-- 출력 : KH정보education원 education진흥워 서울education대학교
+-- 찾아서 바꿔줌
+
+-- [퀴즈] --  tbl_members 테이블이서 성이 '이'씨인 사람만 성을 '리'씨로 변경하세요.
+
+create table tbl_members
+(userid     varchar2(20)
+,passwd     varchar2(20)
+,name       varchar2(20)
+,addr       varchar2(100)
+);
+
+insert into tbl_members(userid,passwd,name,addr)
+values('kimys','abcd','김유신','서울');
+insert into tbl_members(userid,passwd,name,addr)
+values('young2','abcd','이영이','서울');
+insert into tbl_members(userid,passwd,name,addr)
+values('leesa','abcd','이에리사','서울');
+insert into tbl_members(userid,passwd,name,addr)
+values('park','abcd','박이남','서울');
+insert into tbl_members(userid,passwd,name,addr)
+values('leebon','abcd','이본','서울');
+
+commit;
+
+
+select *
+from tbl_members;
+ 
+ /*
+kimys	abcd	김유신	서울
+young2	abcd	이영이	서울
+leesa	abcd	이에리사	서울
+park	abcd	박이남	서울
+leebon	abcd	이본	서울
+*/
+1) like
+update tbl_members set name = '리' || substr(name,2)
+where name like '이%';
+2)
+update tbl_members set name = '리' || substr(name,2)
+where substr(name,1,1)= '이';
+
+/*
+
+kimys	abcd	김유신	서울
+young2	abcd	리영이	서울
+leesa	abcd	리에리사	서울
+park	abcd	박이남	서울
+leebon	abcd	리본	서울
+*/
