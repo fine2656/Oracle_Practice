@@ -1,0 +1,41 @@
+-- ** 2.4 power => 거듭 제곱
+
+select power(2,5)
+from dual;
+-- 출력 : 32 => 2*2*2*2*5
+
+-- ** 2.5 sqrt => 제곱급
+
+select sqrt(4), round(sqrt(2),3), round(sqrt(3),3)
+from dual;
+--출력 : 2	/1.414	/ 1.732 : 루트 4, 루트2, 루트 3
+
+-- ** 2.6 sing : 결과값이 양수라면 1, 음수라면 -1, 0이라면 0 출력한다
+
+select sign(5-2), sign(5-5),sign(2-5)
+from dual;
+
+-- 출력 : 1	0	-1
+
+-- ** 2.7 ascii, chr
+
+select ascii('A'), ascii('a'), ascii(' ')
+from dual;
+-- 출력 : 65	97	32
+
+select chr(65),chr(97),chr(48), chr(32)
+from dual;
+--출력 : A	a	0 ' '	
+
+-- ** 2.8 sin, cos, tan, asin, acos, atan
+
+select round(sin(90),3), round(cos(90),3), round(tan(90),3) , round(asin(0.3),3), round(cos(0.3),3), round(atan(0.3),3)
+from dual;
+-- 출력 0.894	-0.448	-1.995	0.305	0.955	0.291
+
+-- ** 2.9 log
+
+select log(10,100) 
+from dual;
+--> log10 100 출력 : 2
+
