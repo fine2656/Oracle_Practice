@@ -1,0 +1,189 @@
+-- ===== 3. 날짜 함수 =====
+-- 현재 오라클 서버 시스템의 시간을 알려주는 것
+
+--ex)
+select sysdate, to_char(sysdate,'yyyy-mm-dd hh24:mi:ss')
+from dual;
+
+-- 출력 : 18/09/11	2018-09-11 18:10:50
+
+-- 날짜 표기는 기본적으로 ' RR/MM/DD ' 으로 표기된다.
+-- RR => 00 ~ 49 : 2000 ~ 2049
+-- RR => 50 ~ 99 : 1950 ~ 1999
+-- 출력 : 18/09/11	2018-09-11 09:32:05
+
+-- to_char : 형변환 => to_char(systdate) : 날짜 타입을 문자타입으로 바꿔준다
+
+--ex)
+select sysdate,current_date,localtimestamp,current_timestamp
+from dual;
+
+-- 출력 : 18/09/11	/ 18/09/11 / 	18/09/11 18:11:58.000000000	 / 18/09/11 18:11:58.000000000 ASIA/SEOUL
+---- localtimestamp : 연월일+시분초
+-- current_timestamp : 어느 지역의 시간인지 나타남
+
+-- ** 3.1 
+/*
+  날짜 + 숫자 = 날짜
+  날짜 - 숫자 = 날짜
+  
+  여기서 숫자의 단위는 일수이다.
+  
+*/
+--ex) 
+select sysdate -1 as 어제시각
+      , sysdate  as 오늘시각
+      , sysdate +1 as 내일시각
+from dual;
+-- 출력 : 18/09/10	18/09/11	18/09/12
+
+--ex)
+select to_char(sysdate -1,'yyyy-mm-dd hh24:mi:ss) as 어제시각
+      , to_char(sysdate,'yyyy-mm-dd hh24:mi:ss)  as 오늘시각
+      , to_char(sysdate +1 ,'yyyy-mm-dd hh24:mi:ss)as 내일시각
+
+from dual;
+
+-- 출력 : 2018-09-10 18:16:35	2018-09-11 18:16:35	2018-09-12 18:16:35
+
+-- [퀴즈]
+-- [퀴즈] 현재 시각으로 부터 1일 2시간 3분 4초뒤를 나타내세요
+/*
+1시간 : 1/24 일
+1분 : 1/1440 일
+1초 : 1/86400
+*/
+select to_char((sysdate +1+ 2/24+ 3/(24*60)+4/(24*60*60)),'yyyy-mm-dd hh24:mi:ss')
+from dual;
+-- 출력 2018-09-12 20:22:03
+
+-- ** 3.2
+/*
+ 날짜 - 날짜= 숫자 (숫자의 단위는 일수)
+*/
+ex) 
+select (sysdate +2),
+       (sysdate+1),
+       (sysdate +2) - (sysdate+1)
+from dual;
+
+-- 출력 : 18/09/13	18/09/12	1
+
+ex) 재직일수 
+select trunc(sysdate - hire_date)
+from employees;
+
+-- ** 3.3 add_months : 달을 더 해주는 것
+
+select sysdate AS 현재날씨
+, add_months(sysdate,2) AS "2개월후"
+, add_months(sysdate,-2) AS "2개월전"
+from dual;
+
+-- 출력 : 18/09/11	18/11/11	18/07/11
+
+-- [퀴즈] 
+/*
+군복무기간이 21개월을 한다라고 가정하면
+첫번째 제대일자를 구하고, 
+두번째 제대일자까지 먹어야할 짬밥의 그릇수를 구하세요
+(단, 1일 3끼를 먹는다\.)
+*/
+
+select to_char(add_months(sysdate,21),'yyyy-mm-dd') AS 제대일자
+,(add_months(sysdate,21) - sysdate)*3 AS 짬밥
+from dual;
+-- 날짜 - 날짜 = 숫자
+-- 출력 : 2020-06-11	1917
+
+  --1 일2시간3분 4초 구하기 !!
+select  (1*24*60*60 + 2*60*60 + 3*60 + 4)
+       , trunc(93784/60)|| '분 '|| mod(93784,60) || '초 ' -- 1563분 4초 
+       , trunc(1563/60) ||'시 ' || mod(1563,60)|| '분' -- 26시3분
+       , trunc(trunc(93784/60)/60)||'시 '|| mod(trunc(93784/60),60)||'분 ' --26시 3분  
+       , trunc(trunc(trunc(93784/60)/60)/24)|| ' 일'|| mod(trunc(trunc(93784/60)/60),24) || '시간' || mod(trunc(93784/60),60)||'분 '||mod(93784,60) || '초' 
+      
+      
+from dual;
+
+-- [퀴즈] -- 
+-- 수료일자 구하기 : 수료일 : 2019-02-19 18:00:00
+]
+select trunc(to_date('2019-02-19 18:00:00','yyyy-mm-dd hh24:mi:ss')-sysdate)*(24*60*60) -- 수료일 까지 남은 초
+            , trunc(trunc(trunc(13934401/60)/60)/24)
+        || ' 일'
+        || mod(trunc(trunc(13934401/60)/60),24) 
+        || '시간' 
+        || mod(trunc(13934401/60),60)
+        ||'분 '
+        ||mod(13934401,60)
+        || '초'
+from dual;
+-- to_date : 문자를 날짜형식으로 바꿔줌
+-- 출력 : 161 일6시간40분 1초
+
+-----------------------------------------------------------
+
+
+create table tbl_auction
+(auction_no     number
+,expire_date    date
+);
+
+insert into tbl_auction(auction_no, expire_date)
+values(1,to_date('2018-09-13 10:00:00','yyyy-mm-dd hh24:mi:ss'));
+insert into tbl_auction(auction_no, expire_date)
+values(2,to_date('2018-09-15 12:00:00','yyyy-mm-dd hh24:mi:ss'));
+insert into tbl_auction(auction_no, expire_date)
+values(3,to_date('2018-09-16 13:00:00','yyyy-mm-dd hh24:mi:ss'));
+
+commit;
+
+select*
+from tbl_auction;
+/*
+1	18/09/13
+2	18/09/15
+3	18/09/16
+*/
+-------------------------------------------------------------
+
+select auction_no AS 경매번호 
+    , to_char(expire_date,'yyyy-mm-dd hh24:mi:ss') AS 경매종료시각
+,trunc((expire_date -sysdate)*(24*60*60)) AS 경매종료까지남은초
+, trunc(trunc(trunc(trunc((expire_date  - sysdate)*(24*60*60))/60)/60)/24)
+        || ' 일'
+        || mod(trunc(trunc(trunc((expire_date  - sysdate)*(24*60*60))/60)/60),24) 
+        || '시간' 
+        || mod(trunc(trunc((expire_date  - sysdate)*(24*60*60))/60),60)
+        ||'분 '
+        ||mod(trunc((expire_date  - sysdate)*(24*60*60)),60)
+        || '초' AS 경매종료까지남은기간
+from tbl_auction;
+
+/*
+1	2018-09-13 10:00:00	141087	1 일15시간11분 27초
+2	2018-09-15 12:00:00	321086	3 일17시간11분 26초
+3	2018-09-16 13:00:00	411087	4 일18시간11분 27초
+*/
+
+-- ** 3.4 extract --날짜에서 년, 월, 일을 숫자형태로 추출해주는 함수이다.
+
+ex)
+select sysdate
+, to_char(sysdate,'yyyy') AS 년도1 -- 문자
+, extract(year from sysdate) AS 년도2 -- 숫자
+,to_char(sysdate,'mm') AS 월 -- 문자
+,extract(month from sysdate) AS 월 -- 숫자
+,to_char(sysdate,'dd') AS 일 -- 문자
+,extract(day from sysdate) AS 일 -- 숫자
+
+from dual;
+-- 출력 : 18/09/11	2018	2018	09	9	11	11
+
+-- ** 3.5 months_between 두 날짜의 개월 차이를 알려주는 함수
+
+select months_between(add_months(sysdate,5),sysdate)
+from dual;
+
+-- 출력 : 5
