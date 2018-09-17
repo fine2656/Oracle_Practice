@@ -1,0 +1,219 @@
+----- ***** 5.3 RANK : 등수 구하기 /dense_rank : 서열 구하기 *****-----
+--> where 절에서 사용하지 못한다 : 인라인 뷰로 사용하여 해결한다
+
+
+--예제1) 전체에서의 등수/서열 구하기
+select employee_id AS 사원번호
+    ,first_name||last_name AS 사원명
+    ,nvl(salary+(salary*commission_pct),salary) AS 월급
+    ,rank() over(order by nvl(salary+(salary*commission_pct),salary) desc) AS 등수
+    ,dense_rank() over(order by nvl(salary+(salary*commission_pct),salary) desc) AS 서열
+from employees;
+
+/*[출력]
+----------------------------------
+사원번호  사원명   월급   등수   서열
+-----------------------------------
+100 	StevenKing	24000	  1   	1
+145	 JohnRussell	19600	  2     2
+146	 KarenPartners	17550	3   	3
+101	 NeenaKochhar	17000	  4   	4
+102	 LexDe Haan 	17000	  4   	4
+147	 AlbertoErrazuriz	15600	6	  5
+168	 LisaOzer	    14375	  7     6
+*/
+
+--예제2) 부서내에서의 등수/서열 구하기
+
+
+
+select department_id AS 부서번호
+    ,employee_id AS 사원번호
+    ,first_name||last_name AS 사원명
+    ,nvl(salary+(salary*commission_pct),salary) AS 월급
+    ,rank() over(partition by department_id order by nvl(salary+(salary*commission_pct),salary) desc )as 부서내등수
+    -- over(partition by department_id order by: partition by 는 뒤에 나오는 department_id 컬럼 안에서의 파티션을 치고  order by를 하여라
+    -- partition by department_id-- 부서별로 잘라서 등수를 매긴다
+    ,rank() over( order by nvl(salary+(salary*commission_pct),salary) desc) AS 전체등수
+    ,dense_rank() over(partition by department_id order by department_id order by nvl(salary+(salary*commission_pct),salary) desc) AS 부서내서열
+    ,dense_rank() over(order by nvl(salary+(salary*commission_pct),salary) desc) AS 전체서열
+from employees;
+
+/*
+
+----------------------------------
+부서번호   사원번호  사원명         월급   부서내등수   전체등수   부서내서열   전체서열  
+-----------------------------------
+10	       200	  JenniferWhalen	4400	  1	           61     	      1       	48
+20	       201	MichaelHartstein	13000	  1         	  12          	1	        10
+*/
+
+-- [퀴즈 ]
+/* employees 테이블에서 월급에 대한 전체 등수가 1등부터 10등까지인 사원들만 
+사원번호, 사원명,월급, 등수를 나타내세요*/
+
+--!!!! 주의 over 가 들어가는 문은 where 절에 바로 쓸수 없다!!! -> 인라인 뷰 사용!!
+select department_id AS 부서번호
+    ,employee_id AS 사원번호
+    ,ename AS 사원명
+    ,sal AS 월급
+from
+(
+select department_id 
+    ,employee_id 
+    ,first_name||last_name AS ENAME
+    ,nvl(salary+(salary*commission_pct),salary) AS SAL
+    ,rank() over(order by nvl(salary+(salary*commission_pct),salary) desc) AS RANKSAL
+from employees
+)v
+where RANKSAL between 1 and 10;
+
+
+-----***** 5.4 greatest , least *****-----
+1)GREATEST
+--greatest :  나열되어진 것중에서 가장 큰것
+
+select greatest(10,90,100,80)
+from dual;
+--출력 100
+
+
+ 
+2)LEAST
+select least (10, 90,100,80) 
+from dual;
+
+-- least (10, 90,100,80) : 나열되어진 것중에서 가장 작은것 
+-- 출력 : 10
+
+3)문자
+select greatest('김유신','윤봉길','허준','고두심'),
+ least('김유신','윤봉길','허준','고두심')
+ from dual;
+ 
+ -- 문자 / 날짜 /  숫자도 가능
+ -- 출력 : 허준	고두심
+ 
+ -----***** 5.5 lag, lead (게시판에서 목록보기시 많이 사용됨) *****-----
+ /*
+ lag  : 현재 row의 이전(위)값
+ lead : 현재 row의 다음(아래)값
+ */
+--------------------------------------------------------------------------
+ create table tbl_board
+ (
+ writeno number not null -- 글번호 
+ ,userid varchar2(20) not null -- 사용자 아이디
+ , title varchar2(100) not null -- 글제목
+ , writeday date default sysdate -- 작성일자, 값을 넣어주지 않으면 기본적으로 현재날짜가 들어간다
+ );
+ 
+insert into tbl_board( writeno ,userid, title )
+values(1, 'leess', '안녕하세요. 이순신입니다');
+
+ 
+insert into tbl_board( writeno ,userid, title )
+values(2, 'haksk', '안녕하세요. 한석규입니다');
+
+ 
+insert into tbl_board( writeno ,userid, title )
+values(3, 'hongkd', '안녕하세요. 홍길동입니다');
+  
+insert into tbl_board( writeno ,userid, title )
+values(4, 'leess', '충무공 이순신입니다.');
+ 
+  
+insert into tbl_board( writeno ,userid, title )
+values(5, 'hongkd', '동예번쩍 서예번쩍 홍길도 입니다');
+ 
+ select writeno ,userid, title ,
+    to_char(writeday,'yyyy-mm-dd hh24:mi:ss')
+ from tbl_board;
+  
+ commit;
+  
+ 
+ select writeno ,userid, title
+     , to_char(writeday,'yyyy-mm-dd hh24:mi:ss')
+     
+ from tbl_board
+ order by writeno desc;
+ 
+/* tbl_board 테이블
+1	leess	안녕하세요. 이순신입니다	18/09/13
+2	haksk	안녕하세요. 한석규입니다	18/09/13
+3	hongkd	안녕하세요. 홍길동입니다	18/09/13
+4	leess	충무공 이순신입니다.	18/09/13
+5	hongkd	동예번쩍 서예번쩍 홍길도 입니다	18/09/13*/
+
+------------------------------------------------------------------
+
+
+select lag(writeno,1) over(order by writeno desc) AS 이전글번호 -- 글번호를 내림차순으로 했을때 
+,writno AS 현재글번호
+,userid
+,title
+,to_char(writeday,'yyyy-mm-dd hh24:mi:ss') AS writeday
+,lead(writeno,1) over(order by writeno desc) AS 다음글번호
+from tbl_board;
+이씩 작아진다
+/*
+출력 
+(null)	5	hongkd	동예번쩍 서예번쩍 홍길도 입니다	2018-09-13 10:21:28	4
+5	      4	leess	충무공 이순신입니다.	2018-09-13 10:21:20	3
+4	      3	hongkd	안녕하세요. 홍길동입니다	2018-09-13 10:21:13	2
+3	      2	haksk	안녕하세요. 한석규입니다	2018-09-13 10:21:04	1
+2	      1 leess	안녕하세요. 이순신입니다	2018-09-13 10:20:57	
+*/
+/* lead(writeno, 1) over ( order by writeno desc) AS 다음글번호  writeno,1 이면 다음글 번호가 일씩 작아지고, 2이면 
+
+ lead(writeno, 1)  
+현재글     다음글
+5           4
+4           3   
+3           2
+2           1
+1         null
+ lead(writeno, 2)
+현재글     다음글
+5           3
+4           2   
+3           1
+2         null
+1         null
+*/
+
+-- [퀴즈]
+
+
+-----------------------------------------------------------------
+/* 이전글제목    현재글번호   현재글제목   작성자 작성일자 다음글제목*/
+-------------------------------------------------------------------
+글번호 3번의 이전글제목 다음글 제목을 출력 하여라
+
+select BEFORETITLE
+        ,  writeno 
+        , userid 
+        , title
+        ,writeday
+        , NEXTTITLE
+from
+(
+select lag(title || userid,1) over(order by writeno desc) AS BEFORETITLE
+         , writeno 
+         , userid 
+         , title
+         , to_char(writeday,'yyyy-mm-dd hh24:mi:ss') AS writeday
+        ,lead(title|| userid, 1) over ( order by writeno desc) AS NEXTTITLE
+ from tbl_board
+)v
+ where writeno = 3;
+ 
+--lead(title|| userid, 1) title 이전 타이틀 
+
+
+
+
+
+
+
