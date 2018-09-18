@@ -1,0 +1,105 @@
+
+  ----- >>>>> 요약값(rollup, cube, grouping sets) <<<<< ------
+  /*
+      1. rollup(a,b,c) == grouping sets( (a,b,c),(a,b),(a),() ) 
+    
+            group by rollup(department_id, gender)
+         == group by grouping sets( (department_id, gender), (department_id), () )
+  
+      2. cube(a,b,c) == grouping sets( (a,b,c),(a,b),(b,c),(a,c),(a),(b),(c),() )
+ 
+            group by cube(department_id, gender)
+         == group by grouping sets( (department_id, gender), (department_id), (gender), () )
+  */
+  
+  -------------------
+  부서번호  성별  인원수
+  -------------------
+  --1)
+select decode( grouping(department_id), 0, nvl( to_char(department_id), '인턴')
+                                         , '전체') AS 부서번호
+     , decode( grouping(gender), 0, gender
+                                  , '전체') AS 성별
+     , count(*) AS 인원수
+from 
+(
+    select department_id, 
+           case when substr(jubun,7,1) in ('1','3') then '남' else '여' end AS GENDER
+    from employees
+) V
+group by grouping sets( (department_id, gender), (department_id), () );
+
+--2)
+select decode( grouping(department_id), 0, nvl( to_char(department_id), '인턴')
+                                         , '전체') AS 부서번호
+     , decode( grouping(gender), 0, gender
+                                  , '전체') AS 성별
+     , count(*) AS 인원수
+from 
+(
+    select department_id, 
+           case when substr(jubun,7,1) in ('1','3') then '남' else '여' end AS GENDER
+    from employees
+) V
+group by grouping sets( (department_id, gender), (department_id), (gender), () );
+
+--3)
+select decode( grouping(department_id), 0, nvl( to_char(department_id), '인턴')
+                                         , '전체') AS 부서번호
+     , decode( grouping(gender), 0, gender
+                                  , '전체') AS 성별
+     , count(*) AS 인원수
+from 
+(
+    select department_id, 
+           case when substr(jubun,7,1) in ('1','3') then '남' else '여' end AS GENDER
+    from employees
+) V
+group by grouping sets( (department_id, gender), (gender), () )
+order by 1,2;
+
+
+--[퀴즈]
+
+----------------------------------------------
+  연령대      성별      인원수     퍼센티지(%)
+----------------------------------------------
+  ....      ....       ....       ....
+  20         남         5          4
+  20         여         8          7
+  ...       ...        ...        ....
+  10        전체        10         9
+  20        전체        13         11
+  ...       ...        ...        ....
+  전체       남         56          52
+  전체       여         51          48
+  전체      전체        107         100
+--------------------------------------------- 
+
+1)
+select decode( grouping(department_id), 0, nvl(to_char(department_id), '인턴')
+                                         ,'전체') 
+       AS 부서번호
+     , to_char( sum( nvl(salary + (salary * commission_pct), salary) )
+              ,'$9,999,999') 
+       AS 월급의합계
+     , round( (sum( nvl(salary + (salary * commission_pct), salary) ))/(select sum( nvl(salary + (salary * commission_pct), salary) ) from employees) * 100           
+            , 1)
+       AS "퍼센티지(%)"
+  from employees
+  group by grouping sets((department_id),());
+2)
+
+select decode(grouping(trunc(age,-1)),0,to_char(trunc(age,-1))
+                                       ,'전체') AS 연령대
+,decode(grouping(gender),0,gender,'전체') AS 성별 
+,count(*) AS 인원수
+,round(count(*)/(select count(*) from employees)*100) as 퍼센티지
+from 
+(
+  select department_id 
+         ,case when substr(jubun,7,1) in ('1','3') then '남' else '여' end AS GENDER
+         ,extract(year from sysdate)-(substr(jubun,1,2)+(case when substr(jubun,7,1) in ('1','2') then '1900' else '2000' end))+1 AS AGE
+  from employees
+)V
+group by grouping sets((gender,trunc(age,-1)),(trunc(age,-1)),());
