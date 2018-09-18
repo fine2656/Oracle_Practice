@@ -1,0 +1,104 @@
+
+/*
+----------------!!!!! 면접시 항상 물어보는것 !!!!! ------------------
+                ---- !!!!! JOIN !!!!!-----
+------------------------------------------------------------------
+JOIN (조인)은 테이블(뷰)과 테이블(뷰)과 합치는것을 말하는데 행(ROW)과 행을 합치는것이 아니라
+컬럼(Column)과 컬럼(Column)을 합치는 것을 말한다.
+그리고, 서로 다른 테이블(뷰)의 행(ROW)과 행(ROW)을 합치는 것은 UNION 연산자를 사용하는 것이다.
+
+질문 : inner join과 outer join의 차이점에 대해서 말해보시오.
+질문 : join과 UNION의 차이점에 대해서 말해보시오.
+
+    JOIN :  SQL 1992 CODE 방식 (테이블(뷰)과 테이블(뷰)사이의 콤마(,)를 찍어주는 것. 데이터베이스 밴더(회사)제품마다 문법이 다름.) 
+            SQL 1999 CODE 방식 (테이블(뷰)과 테이블(뷰)사이의 join 이라는 단어를 넣어주는 것. ANSI SQL 표준화 => 권장사항!)
+            
+            - SQL 1992 코드 방식  조인조건절 : where
+            - SQL 1999 코드 방식  조인조건절 : ON
+            
+
+   참고 (MS_SQL Server 일 경우)
+    select * 
+    from employees E , departments D
+    where E.department_id *= D.department_id;
+        => *과 가까운쪽 즉 departments 테이블을 모두 보여준다.
+
+
+
+A= (1,2,3) 원소가 3개
+B=(a,b)    원소가 2개
+
+A ⊙ B = {(1,a),(1,b),(2,a),(2,b)(3,a),(3,b)}
+데카르트곱(수학) => 원소의 곱 : 3*2 = 6 개 (모든 경우의 수)
+--> 데카르트의 곱을 데이터베이스에서는 Catersian Product 라고 부른다.
+
+*/
+
+select count(*)
+from employees; --107
+
+select count(*)
+from departments; --27
+
+
+select count(*) --2889 : 107*27
+from employees, departments; --=> Catersian Product SQL 1992 CODE 방식
+-- => 모든 경우의 수 Catersian Product
+
+select COUNT(*) --2889 : 107*27
+from employees CROSS JOIN departments; --=>Catersian Product SQL 1999 CODE 방식
+--CROSS JOIN 모든 : 경우의 수
+
+
+--1.SQL 1992 CODE 방식
+
+1_1)
+
+select count(*)
+from employees, departmens
+where emploees.department_id = departments_id -- 조인조건절
+order by 1;
+-- 출력 : 106
+-- => 같은 부서끼리 맵핑한다. 
+-- departments 부서번호의 null 이 없기 때문에 employees 테이블의 null 값은(인턴) 출력되지 않는다.
+-- SQL 1992 코드 방식 Equi JOIN 
+-- SQL 1992 코드 방식  조인조건절 : where
+
+
+
+--1_2)
+--(+)가 안붙은 테이블의 모든 행렬을 보여준다.
+
+select * 
+from employees E , departments D
+where E.department_id = D.department_id(+); -- 107 
+-- => employees 의 부서번호의 departments 의 부서번호가 없기 때문에 120 이후의 부서번호는 보여지지 않는다
+-- Kimberely가 출력된다.
+
+select * 
+from employees E , departments D
+where E.department_id(+) = D.department_id; -- 122
+-- => departments의 부서번호가 null이 없기 때문에 Kimberely가 보여지지 않는다
+
+/*   참고 (MS_SQL Server 일 경우)
+    select * 
+    from employees E , departments D
+    where E.department_id =* D.department_id;
+
+*/
+
+
+select * 
+from employees E , departments D 
+where (E.department_id= D.department_id)
+      AND E.department_id IN(30,50,60) ; -- 조건절
+      -- department_id 가 공통인 것만 출력 되기 때문에E.department_id가 오든 D.department_id 오든 상관없다.
+      --단, department_id IN(30,50,60)로 할 경우 에러가 난다.
+
+
+select * 
+from employees E , departments D 
+where (E.department_id= D.department_id)
+      AND salary >5000; -- salary 컬럼은 E.deoartment_id 에만 있기 때문에 정상적으로 출력되어진다
+      
+      
