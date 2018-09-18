@@ -1,0 +1,105 @@
+-----***** 그룹함수(집계함수) *****-----
+-- 결과물이 한개만 나온다. <-> 단일행 함수는 일대일
+
+ /*
+    1. sum -- 합계 
+    2. avg -- 평균
+    3. max -- 최대값
+    4. min -- 최소값
+    5. count -- select 되어서 나온 결과물의 행의 갯수
+    6. variance -- 분산
+    7. stddev -- 표준편차
+    
+    --- 중요 !! ! 그룹함수에서는 널은 무조건 제외하고서 연산을 한다.
+    
+    분산 : 분산의 제곱근이 표준편차( 평균에서 떨어진 정도)
+    표준편차 : 표준편차의 제곱승이 분산 (평균과의 차액)
+    
+    분산과 표준편자는 어떤 의사결정시 도움이 되는 지표이다.
+    
+ 
+ */
+ --1) SUM
+ 
+ select sum(salary)
+ from employees; 
+ --employees 테이블의 전체 salary 의 값을 더한다
+ -- 출력 :691416
+ 
+ --2) AVG
+ 
+ select avg(salary)
+ from employees;
+ -- 출력 : 6461.831775700934579439252336448598130841
+ 
+--3) max.
+
+select max(salary)
+from employees;
+-- 출력 : 24000
+
+-- 4) min
+select min(salary)
+from employees;
+-- 출력 :2100
+
+-- 5) count : 행의 갯수
+select count(salary)
+from employees;
+-- 출력 :107
+
+--5_1)
+select count(employee_id)
+, count(salary)
+, count(department_id)
+,count(commission_pct)
+from employees;
+
+-- 출력 : 107	107	106 35 --> null널값은 count 되지 않음
+
+5_2)
+select count(*)  -- 어떤 컬럼에 적어도 한개의 값은 들어있으므로 count(*)로 많이 사용된다.
+from employees;
+
+-- 6) variance
+select  variance(salary)
+from employees;
+-- 출력 : 15284813.66954681713983424440134015164874
+
+
+--7) stddev
+select stddev(salary)
+from employees;
+
+-- 출력 : 3909.579730552481921059198878167256201202
+
+
+select salary,mod(salary,31)
+from employees; -- 오류  
+--> salary는 그룹함수이고 mod 는 단일 함수이기 때문에 오류 발생. 단일 함수와 그룹함수는 동시에 쓰일 수 없다.!!
+
+--[퀴즈] employees 테이블에서 기본급여의 평균치를 구하세요.
+
+select avg(salary)
+, sum(salary)/count(*)
+from employees;
+-- 출력 : 6462	6462
+
+--[퀴즈] employees 테이블에서 수당의 평균치를 구하세요.
+-- 수당을 받는사람들만의 평균
+1)선생님
+select sum(salary*commission_pct) AS SUM
+        ,count(salary*commission_pct) AS COUNT2 -- commission을 받는사람들만 count 되어짐
+       ,count(nvl(salary*commission_pct,0)) AS NVLCOUNT
+       ,  sum(salary*commission_pct)/count(salary*commission_pct) AS SAL
+       , round(sum(salary*commission_pct)/count(nvl(salary*commission_pct,0)),3) AS NVLSAL
+       , round(avg(salary*commission_pct),3) AS AVGSAL -- 수당을 받는사람들만의 평균
+       , round(avg(nvl(salary*commission_pct,0)),3)  AS TOTALSAL-- 수당을 받는사람들만의 평균
+from employees;
+
+2) 내가
+select 
+count(commission_pct) -- 전체 커미션 갯수
+,round(sum(salary*commission_pct) /count(commission_pct)) -- 수당을 받는사람들만의 평균 
+,round(avg(nvl(salary*commission_pct,0))) -- avg는 그룹 함수로서 null 값은 계산되지 않기 때문에 null 값에 0을 주어 계산한다.
+from employees;
