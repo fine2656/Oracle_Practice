@@ -1,0 +1,22 @@
+ ----****SQL 1999 CODE 방식****----
+
+--2_1)  INNER JOIN / 1_1)과 비교
+
+
+select count(*)
+from employees E INNER JOIN departments D
+ON E.department_id = D.department_id;
+
+--출력 106개
+
+-- SQL 1999 CODE 방식 INNER JOIN(== 내부조인)
+-- SQL 1999 코드 방식  조인조건절 : ON
+-- E.department_id와 D.department_id의 값이 같은 것을 출력한다.
+
+--2_2) OUTER JOIN / 1_2)과 비교 : null 값을 보고싶을 때 inner join 아닌 outer join 을 사용한다.
+
+select *
+from employee E LEFT OUTER JOIN department D -- JOIN을 중심으로 왼쪽 테이블을 보여준다
+ON E.department_id = D.department_id;--조인조건절
+-- SQL 1999 CODE방식 LEFT OUTER JOIN(==외부조인)
+--> employees 전체 출력 :Kimberely가 출력된다.
